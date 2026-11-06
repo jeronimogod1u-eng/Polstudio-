@@ -1,3 +1,4 @@
+
 name: Build POLSTUDIO APK
 
 on:
@@ -10,26 +11,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Extract project
         run: |
           unzip -q POLSTUDIO-Android-source.zip -d project
-          echo "PROJECT_DIR=$(find project -name gradlew -type f -printf '%h\n' | head -1)" >> $GITHUB_ENV
+          ls -la project/POLSTUDIO-Android
 
       - name: Build APK
         run: |
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          gradle -p project/POLSTUDIO-Android assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: POLSTUDIO-APK
-          path: project/**/*.apk
+          path: project/POLSTUDIO-Android/app/build/outputs/apk/debug/*.apk
